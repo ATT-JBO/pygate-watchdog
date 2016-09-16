@@ -7,11 +7,12 @@ __status__ = "Prototype"  # "Development", or "Production"
 
 import datetime
 import logging
+import thread
 
 logger = logging.getLogger('watchdog')
 from threading import Event
 
-from core import config, cloud
+from pygate_core import config, cloud
 
 WatchDogAssetId = 'networkWatchDog'    #the asset id used by the watchdog. Change this if it interfers with your own asset id's.
 PingFrequency = 300                 #the frequency in seconds, that a ping is sent out (and that the system expects a ping back)
@@ -57,9 +58,9 @@ def checkPing():
     if _nextPingAt <= datetime.datetime.now():
         if _lastReceived != _pingCounter:
             logging.error("ping didn't arrive in time, resetting connection")
-            cloud.IOT._mqttClient.disconnect()               # make certain taht the connection is closed
-            cloud.IOT._mqttClient.reconnect()
-            return False
+            #cloud.IOT._mqttClient.disconnect()               # make certain taht the connection is closed
+            #cloud.IOT._mqttClient.reconnect()
+            thread.interrupt_main()                         # turns out that the connection can't be recreated by simply reconnecting the mqtt connection, need to restart the appliation.
         else:
             _pingCounter += 1
             ping()
